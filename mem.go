@@ -2,19 +2,14 @@ package memusage
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"runtime"
 	"time"
 )
 
 // MemUsage will write mem profiles to given output file in n intervals
-func MemUsage(filepath string, n int) error {
-	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		return err
-	}
+func MemUsage(file io.Writer, n int) {
 	go func() {
-		defer file.Close()
 		var m runtime.MemStats
 		t := time.Now()
 		fmt.Fprintf(file, "Time :=> %s\n", t.String())
@@ -26,10 +21,9 @@ func MemUsage(filepath string, n int) error {
 			fmt.Fprintf(file, "\tSys = %v MiB", bToMb(m.Sys))
 			fmt.Fprintf(file, "\tNumGC = %v\n", m.NumGC)
 			time.Sleep(time.Duration(n) * time.Second)
-			fmt.Fprintf(file, "\n ==== After ===== %d seconds ", n)
+			fmt.Fprintf(file, "\n ===== After ===== %d seconds ", n)
 		}
 	}()
-	return nil
 }
 
 func bToMb(b uint64) uint64 {
